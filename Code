@@ -26,9 +26,14 @@ flowchart LR
   VendorDecision -- |no| --> Send
   VendorDecision --> EmailGen{WAS FA / PA EMAIL GENERATED?}
 
-  %% Simplified Email generation branch
-  EmailGen --> UpdateDB[(UPDATE STATUS in FUND MANAGER OFA)]
-  EmailGen --> END
+
+%% Email generation branch simplified
+EmailGen --> NewEmail[New Email template] --> TemplateVendor[template based on vendor] --> SubmitCheck{was fa / pa SUBMIT?}
+
+SubmitCheck --> UpdateDB[(UPDATE STATUS in FUND MANAGER OFA)]
+UpdateDB --> EmailGen
+SubmitCheck --> END
+
 
   %% ========== STYLING ==========
   classDef startend fill:#1f77b4,stroke:#0d3b66,stroke-width:2px,color:#fff;
@@ -37,6 +42,6 @@ flowchart LR
   classDef database fill:#90ee90,stroke:#006400,stroke-width:2px,color:#000;
 
   class START,END startend
-  class V,PDF,CheckPES,VendorDecision,EmailGen decision
+  class V,PDF,CheckPES,VendorDecision,EmailGen,SubmitCheck decision
   class A1,A2,A3,A4,A5,B,C,FollowCurrent,CreateNotice,AddChanges,Send,FollowExisting,NewEmail,TemplateVendor,PlanReports process
   class CWP,PES,FMDB,UpdateDB database
