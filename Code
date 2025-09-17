@@ -1,4 +1,4 @@
-flowchart TD
+flowchart LR
   %% Top inputs
   A1[GLOBAL FUND CHANGE] --> B[FUND CHANGE TRANSACTION]
   A2[PRODUCT FUND CHANGE] --> B
@@ -35,7 +35,7 @@ flowchart TD
   SubmitCheck -- |yes| --> FMDB[(FUND MANAGER DFA DATABASE)] --> PlanReports[PLAN REPORTS] --> END
   SubmitCheck -- |no| --> END
 
-  %% ========== STYLING ==========
+  %% ========== STYLING ========== 
   classDef startend fill:#1f77b4,stroke:#0d3b66,stroke-width:2px,color:#fff;
   classDef decision fill:#ffcc00,stroke:#b38600,stroke-width:2px,color:#000;
   classDef process fill:#87cefa,stroke:#4682b4,stroke-width:1px,color:#000;
