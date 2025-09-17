@@ -17,7 +17,6 @@ flowchart LR
   PDF -- |yes| --> CheckPES{CHECK pes For apm service}
 
   %% ===== corrected central section =====
-  %% CheckPES goes to PES DB -> Send -> VENDOR OR ADPM decision
   CheckPES -- |no| --> PES[(PES)]
   PES --> Send[Send data to APM Service] --> VendorDecision{VENDOR OR ADPM?}
   CheckPES -- |yes| --> VendorDecision
@@ -27,21 +26,17 @@ flowchart LR
   VendorDecision -- |no| --> Send
   VendorDecision --> EmailGen{WAS FA / PA EMAIL GENERATED?}
 
-  %% Email generation branch
-  EmailGen -- |no| --> NewEmail[New Email template] --> TemplateVendor[template based on vendor] --> SubmitCheck{was fa., pa email SUBMIT?}
-  EmailGen -- |yes| --> SubmitCheck
+  %% Simplified Email generation branch
+  EmailGen --> UpdateDB[(UPDATE STATUS in FUND MANAGER OFA)]
+  EmailGen --> END
 
-  %% Final submission branch
-  SubmitCheck -- |yes| --> FMDB[(FUND MANAGER DFA DATABASE)] --> PlanReports[PLAN REPORTS] --> END
-  SubmitCheck -- |no| --> END
-
-  %% ========== STYLING ========== 
+  %% ========== STYLING ==========
   classDef startend fill:#1f77b4,stroke:#0d3b66,stroke-width:2px,color:#fff;
   classDef decision fill:#ffcc00,stroke:#b38600,stroke-width:2px,color:#000;
   classDef process fill:#87cefa,stroke:#4682b4,stroke-width:1px,color:#000;
   classDef database fill:#90ee90,stroke:#006400,stroke-width:2px,color:#000;
 
   class START,END startend
-  class V,PDF,CheckPES,VendorDecision,EmailGen,SubmitCheck decision
+  class V,PDF,CheckPES,VendorDecision,EmailGen decision
   class A1,A2,A3,A4,A5,B,C,FollowCurrent,CreateNotice,AddChanges,Send,FollowExisting,NewEmail,TemplateVendor,PlanReports process
-  class CWP,PES,FMDB database
+  class CWP,PES,FMDB,UpdateDB database
