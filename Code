@@ -1,38 +1,47 @@
-flowchart LR
-    A[Start] --> B[Trigger Event<br/>Fund Changes]
-    B --> C{Notice<br/>Required?}
-    C -->|No| Z[End]
-    C -->|Yes| D[Validation &<br/>Notice Gen]
-    D --> E{Valid?}
-    E -->|No| F[Stop]
-    E -->|Yes| G[Prepare<br/>PDF]
-    G --> H{PDF<br/>Created?}
-    H -->|No| D
-    H -->|Yes| I{APM<br/>Enabled?}
-    I -->|No| J[Manual<br/>Distribution]
-    I -->|Yes| K[APM<br/>Process]
-    K --> L[Fetch<br/>Participant<br/>Data]
-    L --> M[Send to<br/>Spire]
-    M --> N[Spire<br/>Delivers<br/>Notices]
-    N --> O[Status<br/>Updates]
-    O --> P{Status<br/>OK?}
-    P -->|Yes| Q[Update<br/>Delivered]
-    P -->|No| R[Not Sent/<br/>Retry]
-    Q --> S[Update<br/>Systems]
-    R --> S
-    J --> S
-    S --> T[End]
-    F --> U[End]
-    
-    %% Styling
-    classDef startEnd fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef process fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef decision fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef error fill:#ffebee,stroke:#b71c1c,stroke-width:2px
-    classDef manual fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    
-    class A,T,U,Z startEnd
-    class B,D,G,K,L,M,N,O,Q,S process
-    class C,E,H,I,P decision
-    class F error
-    class J manual
+flowchart TD
+  %% Top inputs
+  A1[GLOBAL FUND CHANGE] --> B[FUND CHANGE TRANSACTION]
+  A2[PRODUCT FUND CHANGE] --> B
+  A3[GATEWAY] --> B
+  A4[FCO] --> C[PLAN FUND CHANGE] --> B
+  A5[UPLOAD] --> C
+
+  B --> START([START])
+
+  %% initial checks
+  START --> V{IS transaction valid?}
+  V -- |no| --> FollowCurrent[follow current process] --> END([END])
+  V -- |yes| --> PDF{was pdf created?}
+
+  PDF -- |no| --> CreateNotice[create and save notice] --> CWP[(CWP/DOCS DATABASE)] --> AddChanges[Additional changes FOR APM IF ANY] --> PDF
+  PDF -- |yes| --> CheckPES{CHECK pes For apm service}
+
+  %% ===== corrected central section =====
+  CheckPES -- |no| --> PES[(PES)]
+  PES --> Send[Send data to APM Service] --> VendorDecision{VENDOR OR ADPM?}
+  CheckPES -- |yes| --> VendorDecision
+
+  %% Vendor / ADPM branching
+  VendorDecision -- |yes| --> FollowExisting[follow existing APM process] --> END
+  VendorDecision -- |no| --> Send
+
+  %% After send / vendor branch, check email generation
+  Send --> EmailGen{WAS FA / PA EMAIL GENERATED?}
+  EmailGen -- |no| --> NewEmail[New Email template] --> TemplateVendor[template based on vendor] --> SubmitCheck{was fa., pa email SUBMIT?}
+  EmailGen -- |yes| --> SubmitCheck
+
+  %% Final submission branch
+  SubmitCheck -- |yes| --> FMDB[(FUND MANAGER DFA DATABASE)] --> PlanReports[PLAN REPORTS] --> END
+  SubmitCheck -- |no| --> END
+
+  %% ========== STYLING ==========
+  classDef startend fill:#1f77b4,stroke:#0d3b66,stroke-width:2px,color:#fff;
+  classDef decision fill:#ffcc00,stroke:#b38600,stroke-width:2px,color:#000;
+  classDef process fill:#87cefa,stroke:#4682b4,stroke-width:1px,color:#000;
+  classDef database fill:#90ee90,stroke:#006400,stroke-width:2px,color:#000;
+
+  %% Apply classes
+  class START,END startend
+  class V,PDF,CheckPES,VendorDecision,EmailGen,SubmitCheck decision
+  class A1,A2,A3,A4,A5,B,C,FollowCurrent,CreateNotice,AddChanges,Send,FollowExisting,NewEmail,TemplateVendor,PlanReports process
+  class CWP,PES,FMDB database
